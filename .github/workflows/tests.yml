@@ -1,0 +1,17 @@
+name: rule-tests
+
+on: [push, pull_request]
+
+jobs:
+  logtest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Validate rule XML is well-formed
+        run: |
+          python3 -c "import xml.dom.minidom; xml.dom.minidom.parseString('<root>'+open('rules/local_rules.xml').read()+'</root>')" \
+            && echo "rules/local_rules.xml is well-formed"
+          python3 -c "import json; json.load(open('tests/cases.json'))" \
+            && echo "tests/cases.json is valid JSON"
+      - name: Replay detection test cases through the Wazuh engine
+        run: ./tests/test_rules.sh

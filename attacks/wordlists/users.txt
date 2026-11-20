@@ -1,0 +1,15 @@
+admin
+root
+test
+user
+ubuntu
+oracle
+postgres
+git
+deploy
+ftp
+guest
+pi
+ansible
+jenkins
+support

@@ -1,0 +1,5 @@
+.wazuh-docker/
+config/wazuh_indexer_ssl_certs/
+*.pem
+*.key
+sample-alerts.local.json

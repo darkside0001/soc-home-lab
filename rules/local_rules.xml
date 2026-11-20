@@ -1,0 +1,203 @@
+<!--
+  soc-home-lab: custom Wazuh detection rules
+  Rule ID range: 100100 - 100599 (reserved for local rules)
+
+  Each rule is mapped to MITRE ATT&CK and covered by a test case in
+  tests/cases.json, which CI replays through the real Wazuh engine
+  (wazuh-logtest) on every push.
+
+  100100-100199  Credential access over SSH
+  100200-100299  Privilege escalation (sudo)
+  100300-100399  Persistence (accounts, cron, SSH keys)
+  100400-100499  Defense evasion
+  100500-100599  Discovery / reconnaissance
+-->
+
+<group name="local,soc_lab,ssh,">
+
+  <!-- Brute force against existing accounts: same source IP, short window.
+       Built-in 5763 counts failures from any source; this one pins the source
+       so the alert names the attacker. -->
+  <rule id="100100" level="10" frequency="6" timeframe="60" ignore="120">
+    <if_matched_sid>5760</if_matched_sid>
+    <same_srcip />
+    <description>SOC-LAB: SSH brute force from $(srcip): 6+ failed passwords in 60s</description>
+    <mitre>
+      <id>T1110.001</id>
+    </mitre>
+    <group>authentication_failures,attack,</group>
+  </rule>
+
+  <!-- Password spraying / username enumeration: one source, many different
+       usernames that do not exist on the host. -->
+  <rule id="100101" level="10" frequency="5" timeframe="300" ignore="300">
+    <if_matched_sid>5710</if_matched_sid>
+    <same_srcip />
+    <different_user />
+    <description>SOC-LAB: SSH password spraying / user enumeration from $(srcip): 5+ different invalid usernames</description>
+    <mitre>
+      <id>T1110.003</id>
+      <id>T1087</id>
+    </mitre>
+    <group>authentication_failures,attack,</group>
+  </rule>
+
+  <!-- The alert that matters most: a successful login from an address that
+       was just brute forcing. Pattern borrowed from Wazuh rule 40112. -->
+  <rule id="100102" level="14" timeframe="600">
+    <if_sid>5715</if_sid>
+    <if_matched_sid>100100</if_matched_sid>
+    <same_srcip />
+    <description>SOC-LAB: Successful SSH login for $(dstuser) from $(srcip) after brute force - possible account compromise</description>
+    <mitre>
+      <id>T1110</id>
+      <id>T1078</id>
+    </mitre>
+    <group>authentication_success,attack,</group>
+  </rule>
+
+  <rule id="100103" level="12">
+    <if_sid>5715</if_sid>
+    <user>^root$</user>
+    <description>SOC-LAB: Direct SSH login as root from $(srcip)</description>
+    <mitre>
+      <id>T1078.003</id>
+    </mitre>
+    <group>authentication_success,</group>
+  </rule>
+
+</group>
+
+
+<group name="local,soc_lab,sudo,">
+
+  <!-- sudo straight into an interpreter or shell -->
+  <rule id="100200" level="10">
+    <if_sid>5402,5403</if_sid>
+    <regex type="pcre2">COMMAND=\S*/(?:ba|z|da|k)?sh(?:\s|$)|COMMAND=\S*/(?:python[0-9.]*|perl|ruby|php[0-9.]*)(?:\s|$)|COMMAND=\S*/su\s+-?\s*$|COMMAND=\S*/su$</regex>
+    <description>SOC-LAB: $(srcuser) used sudo to start a root shell or interpreter</description>
+    <mitre>
+      <id>T1548.003</id>
+      <id>T1059.004</id>
+    </mitre>
+    <group>privilege_escalation,</group>
+  </rule>
+
+  <!-- GTFOBins-style escapes: allowed binaries abused to spawn a shell -->
+  <rule id="100201" level="12">
+    <if_sid>5402,5403</if_sid>
+    <regex type="pcre2">COMMAND=\S*/(?:find\s.*-exec|awk\s.*system|vim?\s.*-c|less\s|more\s|tar\s.*--checkpoint-action|env\s+/bin/|nmap\s.*--script|git\s.*-p\s+help|zip\s.*-TT|rsync\s.*-e)</regex>
+    <description>SOC-LAB: sudo shell escape via allowed binary (GTFOBins) by $(srcuser)</description>
+    <mitre>
+      <id>T1548.003</id>
+    </mitre>
+    <group>privilege_escalation,attack,</group>
+  </rule>
+
+  <rule id="100202" level="10" frequency="3" timeframe="300">
+    <if_matched_sid>5405</if_matched_sid>
+    <same_srcuser />
+    <description>SOC-LAB: Repeated sudo attempts by $(srcuser), who is not in sudoers</description>
+    <mitre>
+      <id>T1548.003</id>
+    </mitre>
+    <group>privilege_escalation,</group>
+  </rule>
+
+</group>
+
+
+<group name="local,soc_lab,persistence,">
+
+  <!-- A new account with UID 0 is a root-equivalent backdoor -->
+  <rule id="100300" level="14">
+    <if_sid>5902</if_sid>
+    <regex type="pcre2">UID=0,</regex>
+    <description>SOC-LAB: New account $(dstuser) created with UID 0 (root-equivalent backdoor)</description>
+    <mitre>
+      <id>T1136.001</id>
+      <id>T1078.003</id>
+    </mitre>
+    <group>account_changed,attack,</group>
+  </rule>
+
+  <rule id="100301" level="12">
+    <program_name>^usermod$</program_name>
+    <regex type="pcre2">add '[^']+' to group '(?:sudo|wheel|admin|root)'</regex>
+    <description>SOC-LAB: Account added to a privileged group with usermod</description>
+    <mitre>
+      <id>T1098</id>
+    </mitre>
+    <group>account_changed,</group>
+  </rule>
+
+  <rule id="100302" level="12">
+    <if_sid>2961</if_sid>
+    <description>SOC-LAB: $(dstuser) added to sudo group by $(srcuser) with gpasswd</description>
+    <mitre>
+      <id>T1098</id>
+    </mitre>
+    <group>account_changed,</group>
+  </rule>
+
+  <rule id="100303" level="10">
+    <if_sid>2833</if_sid>
+    <description>SOC-LAB: root crontab changed - check for persistence</description>
+    <mitre>
+      <id>T1053.003</id>
+    </mitre>
+  </rule>
+
+  <!-- File integrity monitoring (syscheck) on SSH keys -->
+  <rule id="100310" level="12">
+    <if_sid>550,554</if_sid>
+    <field name="file">authorized_keys$</field>
+    <description>SOC-LAB: SSH authorized_keys created or modified: $(file)</description>
+    <mitre>
+      <id>T1098.004</id>
+    </mitre>
+    <group>syscheck,</group>
+  </rule>
+
+  <rule id="100311" level="12">
+    <if_sid>550,554</if_sid>
+    <field name="file">^/etc/sudoers</field>
+    <description>SOC-LAB: sudoers configuration changed: $(file)</description>
+    <mitre>
+      <id>T1548.003</id>
+    </mitre>
+    <group>syscheck,</group>
+  </rule>
+
+</group>
+
+
+<group name="local,soc_lab,evasion,">
+
+  <rule id="100400" level="12">
+    <if_sid>592</if_sid>
+    <match>auth.log|secure|syslog|messages</match>
+    <description>SOC-LAB: Authentication or system log was truncated - possible log clearing</description>
+    <mitre>
+      <id>T1070.002</id>
+    </mitre>
+    <group>attack,</group>
+  </rule>
+
+</group>
+
+
+<group name="local,soc_lab,recon,">
+
+  <!-- Port scanners and banner grabbers open TCP to sshd without speaking SSH -->
+  <rule id="100500" level="8" frequency="4" timeframe="60" ignore="120">
+    <if_matched_sid>5706</if_matched_sid>
+    <same_srcip />
+    <description>SOC-LAB: Repeated SSH probes without handshake from $(srcip) - service scan</description>
+    <mitre>
+      <id>T1046</id>
+    </mitre>
+    <group>recon,</group>
+  </rule>
+
+</group>

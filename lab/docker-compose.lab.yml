@@ -1,0 +1,47 @@
+# soc-home-lab overlay for the official Wazuh single-node stack.
+# scripts/setup.sh runs it as:
+#   docker compose -f <wazuh-docker>/single-node/docker-compose.yml \
+#                  -f lab/docker-compose.lab.yml up -d --build
+# LAB_ROOT is exported by setup.sh (absolute path of this repository).
+
+services:
+  wazuh.manager:
+    volumes:
+      - ${LAB_ROOT}/rules/local_rules.xml:/wazuh-config-mount/etc/rules/local_rules.xml:ro
+    networks:
+      default:
+        ipv4_address: 172.30.0.10
+
+  victim:
+    build:
+      context: ${LAB_ROOT}/lab/victim
+      args:
+        WAZUH_VERSION: ${WAZUH_VERSION:-4.12.0}
+    hostname: victim
+    container_name: soc-lab-victim
+    environment:
+      - WAZUH_MANAGER=wazuh.manager
+      - WAZUH_AGENT_NAME=victim
+    depends_on:
+      - wazuh.manager
+    networks:
+      default:
+        ipv4_address: 172.30.0.20
+
+  attacker:
+    build:
+      context: ${LAB_ROOT}/lab/attacker
+    hostname: attacker
+    container_name: soc-lab-attacker
+    volumes:
+      - ${LAB_ROOT}/attacks:/attacks:ro
+    networks:
+      default:
+        ipv4_address: 172.30.0.66
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+          ip_range: 172.30.0.128/25

@@ -1,0 +1,413 @@
+[
+  {
+    "case": "ssh-bruteforce",
+    "event": "Nov 20 10:15:05 victim sshd[2005]: Failed password for alice from 172.30.0.66 port 50005 ssh2",
+    "rule": {
+      "id": "100100",
+      "level": 10,
+      "description": "SOC-LAB: SSH brute force from 172.30.0.66: 6+ failed passwords in 60s",
+      "mitre": {
+        "id": [
+          "T1110.001"
+        ],
+        "tactic": [
+          "Credential Access"
+        ],
+        "technique": [
+          "Password Guessing"
+        ]
+      },
+      "groups": [
+        "local",
+        "soc_lab",
+        "ssh",
+        "authentication_failures",
+        "attack"
+      ],
+      "firedtimes": 1
+    }
+  },
+  {
+    "case": "ssh-password-spraying",
+    "event": "Nov 20 10:20:04 victim sshd[3004]: Failed password for invalid user ubuntu from 172.30.0.66 port 51004 ssh2",
+    "rule": {
+      "id": "100101",
+      "level": 10,
+      "description": "SOC-LAB: SSH password spraying / user enumeration from 172.30.0.66: 5+ different invalid usernames",
+      "mitre": {
+        "id": [
+          "T1110.003",
+          "T1087"
+        ],
+        "tactic": [
+          "Credential Access",
+          "Discovery"
+        ],
+        "technique": [
+          "Password Spraying",
+          "Account Discovery"
+        ]
+      },
+      "groups": [
+        "local",
+        "soc_lab",
+        "ssh",
+        "authentication_failures",
+        "attack"
+      ],
+      "firedtimes": 1
+    }
+  },
+  {
+    "case": "ssh-success-after-bruteforce",
+    "event": "Nov 20 10:16:10 victim sshd[2100]: Accepted password for alice from 172.30.0.66 port 50100 ssh2",
+    "rule": {
+      "id": "100102",
+      "level": 14,
+      "description": "SOC-LAB: Successful SSH login for alice from 172.30.0.66 after brute force - possible account compromise",
+      "mitre": {
+        "id": [
+          "T1110",
+          "T1078"
+        ],
+        "tactic": [
+          "Credential Access",
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ],
+        "technique": [
+          "Brute Force",
+          "Valid Accounts"
+        ]
+      },
+      "groups": [
+        "local",
+        "soc_lab",
+        "ssh",
+        "authentication_success",
+        "attack"
+      ],
+      "firedtimes": 1
+    }
+  },
+  {
+    "case": "ssh-root-login",
+    "event": "Nov 20 10:30:00 victim sshd[4000]: Accepted password for root from 172.30.0.66 port 52000 ssh2",
+    "rule": {
+      "id": "100103",
+      "level": 12,
+      "description": "SOC-LAB: Direct SSH login as root from 172.30.0.66",
+      "mitre": {
+        "id": [
+          "T1078.003"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ],
+        "technique": [
+          "Local Accounts"
+        ]
+      },
+      "groups": [
+        "local",
+        "soc_lab",
+        "ssh",
+        "authentication_success"
+      ],
+      "firedtimes": 1
+    }
+  },
+  {
+    "case": "sudo-root-shell",
+    "event": "Nov 20 10:40:00 victim sudo:    alice : TTY=pts/0 ; PWD=/home/alice ; USER=root ; COMMAND=/bin/bash",
+    "rule": {
+      "id": "100200",
+      "level": 10,
+      "description": "SOC-LAB: alice used sudo to start a root shell or interpreter",
+      "mitre": {
+        "id": [
+          "T1548.003",
+          "T1059.004"
+        ],
+        "tactic": [
+          "Privilege Escalation",
+          "Defense Evasion",
+          "Execution"
+        ],
+        "technique": [
+          "Sudo and Sudo Caching",
+          "Unix Shell"
+        ]
+      },
+      "groups": [
+        "local",
+        "soc_lab",
+        "sudo",
+        "privilege_escalation"
+      ],
+      "firedtimes": 1
+    }
+  },
+  {
+    "case": "sudo-python",
+    "event": "Nov 20 10:40:05 victim sudo:    alice : TTY=pts/0 ; PWD=/home/alice ; USER=root ; COMMAND=/usr/bin/python3 -c import pty;pty.spawn('/bin/sh')",
+    "rule": {
+      "id": "100200",
+      "level": 10,
+      "description": "SOC-LAB: alice used sudo to start a root shell or interpreter",
+      "mitre": {
+        "id": [
+          "T1548.003",
+          "T1059.004"
+        ],
+        "tactic": [
+          "Privilege Escalation",
+          "Defense Evasion",
+          "Execution"
+        ],
+        "technique": [
+          "Sudo and Sudo Caching",
+          "Unix Shell"
+        ]
+      },
+      "groups": [
+        "local",
+        "soc_lab",
+        "sudo",
+        "privilege_escalation"
+      ],
+      "firedtimes": 1
+    }
+  },
+  {
+    "case": "sudo-gtfobins-find",
+    "event": "Nov 20 10:41:00 victim sudo:    alice : TTY=pts/0 ; PWD=/home/alice ; USER=root ; COMMAND=/usr/bin/find . -exec /bin/sh -c id ; -quit",
+    "rule": {
+      "id": "100201",
+      "level": 12,
+      "description": "SOC-LAB: sudo shell escape via allowed binary (GTFOBins) by alice",
+      "mitre": {
+        "id": [
+          "T1548.003"
+        ],
+        "tactic": [
+          "Privilege Escalation",
+          "Defense Evasion"
+        ],
+        "technique": [
+          "Sudo and Sudo Caching"
+        ]
+      },
+      "groups": [
+        "local",
+        "soc_lab",
+        "sudo",
+        "privilege_escalation",
+        "attack"
+      ],
+      "firedtimes": 1
+    }
+  },
+  {
+    "case": "sudo-not-in-sudoers-repeated",
+    "event": "Nov 20 10:43:02 victim sudo:      bob : user NOT in sudoers ; TTY=pts/1 ; PWD=/home/bob ; USER=root ; COMMAND=/bin/cat /etc/shadow",
+    "rule": {
+      "id": "100202",
+      "level": 10,
+      "description": "SOC-LAB: Repeated sudo attempts by bob, who is not in sudoers",
+      "mitre": {
+        "id": [
+          "T1548.003"
+        ],
+        "tactic": [
+          "Privilege Escalation",
+          "Defense Evasion"
+        ],
+        "technique": [
+          "Sudo and Sudo Caching"
+        ]
+      },
+      "groups": [
+        "local",
+        "soc_lab",
+        "sudo",
+        "privilege_escalation"
+      ],
+      "firedtimes": 1
+    }
+  },
+  {
+    "case": "backdoor-uid0-account",
+    "event": "Nov 20 10:50:00 victim useradd[5000]: new user: name=sysupdate, UID=0, GID=0, home=/root, shell=/bin/bash, from=/dev/pts/0",
+    "rule": {
+      "id": "100300",
+      "level": 14,
+      "description": "SOC-LAB: New account sysupdate created with UID 0 (root-equivalent backdoor)",
+      "mitre": {
+        "id": [
+          "T1136.001",
+          "T1078.003"
+        ],
+        "tactic": [
+          "Persistence",
+          "Defense Evasion",
+          "Privilege Escalation",
+          "Initial Access"
+        ],
+        "technique": [
+          "Local Account",
+          "Local Accounts"
+        ]
+      },
+      "groups": [
+        "local",
+        "soc_lab",
+        "persistence",
+        "account_changed",
+        "attack"
+      ],
+      "firedtimes": 1
+    }
+  },
+  {
+    "case": "usermod-add-to-sudo",
+    "event": "Nov 20 10:51:00 victim usermod[5002]: add 'bob' to group 'sudo'",
+    "rule": {
+      "id": "100301",
+      "level": 12,
+      "description": "SOC-LAB: Account added to a privileged group with usermod",
+      "mitre": {
+        "id": [
+          "T1098"
+        ],
+        "tactic": [
+          "Persistence"
+        ],
+        "technique": [
+          "Account Manipulation"
+        ]
+      },
+      "groups": [
+        "local",
+        "soc_lab",
+        "persistence",
+        "account_changed"
+      ],
+      "firedtimes": 1
+    }
+  },
+  {
+    "case": "gpasswd-add-to-sudo",
+    "event": "Nov 20 10:51:30 victim gpasswd[5003]: user bob added by root to group sudo",
+    "rule": {
+      "id": "100302",
+      "level": 12,
+      "description": "SOC-LAB: bob added to sudo group by root with gpasswd",
+      "mitre": {
+        "id": [
+          "T1098"
+        ],
+        "tactic": [
+          "Persistence"
+        ],
+        "technique": [
+          "Account Manipulation"
+        ]
+      },
+      "groups": [
+        "local",
+        "soc_lab",
+        "persistence",
+        "account_changed"
+      ],
+      "firedtimes": 1
+    }
+  },
+  {
+    "case": "root-crontab-changed",
+    "event": "Nov 20 10:52:00 victim crontab[5004]: (root) REPLACE (root)",
+    "rule": {
+      "id": "100303",
+      "level": 10,
+      "description": "SOC-LAB: root crontab changed - check for persistence",
+      "mitre": {
+        "id": [
+          "T1053.003"
+        ],
+        "tactic": [
+          "Execution",
+          "Persistence",
+          "Privilege Escalation"
+        ],
+        "technique": [
+          "Cron"
+        ]
+      },
+      "groups": [
+        "local",
+        "soc_lab",
+        "persistence"
+      ],
+      "firedtimes": 1
+    }
+  },
+  {
+    "case": "auth-log-truncated",
+    "event": "ossec: File size reduced (inode remained): '/var/log/auth.log'.",
+    "rule": {
+      "id": "100400",
+      "level": 12,
+      "description": "SOC-LAB: Authentication or system log was truncated - possible log clearing",
+      "mitre": {
+        "id": [
+          "T1070.002"
+        ],
+        "tactic": [
+          "Defense Evasion"
+        ],
+        "technique": [
+          "Clear Linux or Mac System Logs"
+        ]
+      },
+      "groups": [
+        "local",
+        "soc_lab",
+        "evasion",
+        "attack"
+      ],
+      "firedtimes": 1
+    }
+  },
+  {
+    "case": "ssh-service-scan",
+    "event": "Nov 20 10:10:03 victim sshd[6003]: Did not receive identification string from 172.30.0.66 port 53003",
+    "rule": {
+      "id": "100500",
+      "level": 8,
+      "description": "SOC-LAB: Repeated SSH probes without handshake from 172.30.0.66 - service scan",
+      "mitre": {
+        "id": [
+          "T1046"
+        ],
+        "tactic": [
+          "Discovery"
+        ],
+        "technique": [
+          "Network Service Discovery"
+        ]
+      },
+      "groups": [
+        "local",
+        "soc_lab",
+        "recon",
+        "recon"
+      ],
+      "firedtimes": 1
+    }
+  }
+]

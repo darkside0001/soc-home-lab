@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="420" font-family="Segoe UI, Arial, sans-serif" font-size="13">
+  <rect width="820" height="420" fill="#ffffff"/>
+  <text x="410" y="30" text-anchor="middle" font-size="18" font-weight="bold" fill="#1b2a4a">soc-home-lab — network topology</text>
+
+  <!-- lab network boundary -->
+  <rect x="30" y="55" width="760" height="330" rx="10" fill="#f4f7fb" stroke="#9fb3c8" stroke-dasharray="6 4"/>
+  <text x="48" y="78" fill="#5b6b7f" font-size="12">Isolated Docker bridge · 172.30.0.0/24 · no route to the internet for lab traffic</text>
+
+  <!-- attacker -->
+  <rect x="60" y="150" width="170" height="110" rx="8" fill="#fde8e8" stroke="#d64545"/>
+  <text x="145" y="178" text-anchor="middle" font-weight="bold" fill="#8a1f1f">attacker</text>
+  <text x="145" y="200" text-anchor="middle" fill="#5b2222">hydra · nmap</text>
+  <text x="145" y="218" text-anchor="middle" fill="#5b2222">sshpass</text>
+  <text x="145" y="244" text-anchor="middle" fill="#8a1f1f" font-size="12">172.30.0.66</text>
+
+  <!-- victim -->
+  <rect x="325" y="150" width="170" height="110" rx="8" fill="#fff6e5" stroke="#d9a21b"/>
+  <text x="410" y="178" text-anchor="middle" font-weight="bold" fill="#8a6414">victim</text>
+  <text x="410" y="200" text-anchor="middle" fill="#6b4f12">Ubuntu + sshd</text>
+  <text x="410" y="218" text-anchor="middle" fill="#6b4f12">Wazuh agent</text>
+  <text x="410" y="244" text-anchor="middle" fill="#8a6414" font-size="12">172.30.0.20</text>
+
+  <!-- wazuh stack -->
+  <rect x="590" y="110" width="180" height="190" rx="8" fill="#e8f0fe" stroke="#3b6fd4"/>
+  <text x="680" y="136" text-anchor="middle" font-weight="bold" fill="#1f3f8a">Wazuh stack</text>
+  <text x="680" y="160" text-anchor="middle" fill="#28407a">manager (analysisd)</text>
+  <text x="680" y="180" text-anchor="middle" fill="#28407a">+ local_rules.xml</text>
+  <text x="680" y="204" text-anchor="middle" fill="#28407a">indexer</text>
+  <text x="680" y="228" text-anchor="middle" fill="#28407a">dashboard</text>
+  <text x="680" y="258" text-anchor="middle" fill="#1f3f8a" font-size="12">172.30.0.10</text>
+  <text x="680" y="282" text-anchor="middle" fill="#5b6b7f" font-size="11">https://localhost</text>
+
+  <!-- arrows -->
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#444"/>
+    </marker>
+  </defs>
+  <line x1="230" y1="205" x2="323" y2="205" stroke="#d64545" stroke-width="2" marker-end="url(#a)"/>
+  <text x="276" y="197" text-anchor="middle" fill="#8a1f1f" font-size="11">SSH attacks</text>
+
+  <line x1="495" y1="190" x2="588" y2="190" stroke="#3b6fd4" stroke-width="2" marker-end="url(#a)"/>
+  <text x="541" y="182" text-anchor="middle" fill="#1f3f8a" font-size="11">agent → events</text>
+
+  <text x="410" y="340" text-anchor="middle" fill="#5b6b7f" font-size="12">auth.log / syscheck → agent → manager → custom rules → alerts (MITRE ATT&amp;CK) → dashboard</text>
+</svg>

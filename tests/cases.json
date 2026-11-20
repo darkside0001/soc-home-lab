@@ -1,0 +1,168 @@
+[
+  {
+    "name": "ssh-bruteforce",
+    "expect_rule": "100100",
+    "events": [
+      "Nov 20 10:15:00 victim sshd[2000]: Failed password for alice from 172.30.0.66 port 50000 ssh2",
+      "Nov 20 10:15:01 victim sshd[2001]: Failed password for alice from 172.30.0.66 port 50001 ssh2",
+      "Nov 20 10:15:02 victim sshd[2002]: Failed password for alice from 172.30.0.66 port 50002 ssh2",
+      "Nov 20 10:15:03 victim sshd[2003]: Failed password for alice from 172.30.0.66 port 50003 ssh2",
+      "Nov 20 10:15:04 victim sshd[2004]: Failed password for alice from 172.30.0.66 port 50004 ssh2",
+      "Nov 20 10:15:05 victim sshd[2005]: Failed password for alice from 172.30.0.66 port 50005 ssh2",
+      "Nov 20 10:15:06 victim sshd[2006]: Failed password for alice from 172.30.0.66 port 50006 ssh2",
+      "Nov 20 10:15:07 victim sshd[2007]: Failed password for alice from 172.30.0.66 port 50007 ssh2"
+    ]
+  },
+  {
+    "name": "ssh-single-failure-is-quiet",
+    "forbid_rule": "100100",
+    "events": [
+      "Nov 20 10:15:01 victim sshd[2001]: Failed password for alice from 172.30.0.66 port 50001 ssh2"
+    ]
+  },
+  {
+    "name": "ssh-password-spraying",
+    "expect_rule": "100101",
+    "events": [
+      "Nov 20 10:20:00 victim sshd[3000]: Failed password for invalid user admin from 172.30.0.66 port 51000 ssh2",
+      "Nov 20 10:20:01 victim sshd[3001]: Failed password for invalid user oracle from 172.30.0.66 port 51001 ssh2",
+      "Nov 20 10:20:02 victim sshd[3002]: Failed password for invalid user postgres from 172.30.0.66 port 51002 ssh2",
+      "Nov 20 10:20:03 victim sshd[3003]: Failed password for invalid user test from 172.30.0.66 port 51003 ssh2",
+      "Nov 20 10:20:04 victim sshd[3004]: Failed password for invalid user ubuntu from 172.30.0.66 port 51004 ssh2",
+      "Nov 20 10:20:05 victim sshd[3005]: Failed password for invalid user git from 172.30.0.66 port 51005 ssh2",
+      "Nov 20 10:20:06 victim sshd[3006]: Failed password for invalid user deploy from 172.30.0.66 port 51006 ssh2"
+    ]
+  },
+  {
+    "name": "ssh-same-invalid-user-is-not-spraying",
+    "forbid_rule": "100101",
+    "events": [
+      "Nov 20 10:20:00 victim sshd[3000]: Failed password for invalid user admin from 172.30.0.66 port 51000 ssh2",
+      "Nov 20 10:20:01 victim sshd[3001]: Failed password for invalid user admin from 172.30.0.66 port 51001 ssh2",
+      "Nov 20 10:20:02 victim sshd[3002]: Failed password for invalid user admin from 172.30.0.66 port 51002 ssh2"
+    ]
+  },
+  {
+    "name": "ssh-success-after-bruteforce",
+    "expect_rule": "100102",
+    "events": [
+      "Nov 20 10:15:00 victim sshd[2000]: Failed password for alice from 172.30.0.66 port 50000 ssh2",
+      "Nov 20 10:15:01 victim sshd[2001]: Failed password for alice from 172.30.0.66 port 50001 ssh2",
+      "Nov 20 10:15:02 victim sshd[2002]: Failed password for alice from 172.30.0.66 port 50002 ssh2",
+      "Nov 20 10:15:03 victim sshd[2003]: Failed password for alice from 172.30.0.66 port 50003 ssh2",
+      "Nov 20 10:15:04 victim sshd[2004]: Failed password for alice from 172.30.0.66 port 50004 ssh2",
+      "Nov 20 10:15:05 victim sshd[2005]: Failed password for alice from 172.30.0.66 port 50005 ssh2",
+      "Nov 20 10:15:06 victim sshd[2006]: Failed password for alice from 172.30.0.66 port 50006 ssh2",
+      "Nov 20 10:15:07 victim sshd[2007]: Failed password for alice from 172.30.0.66 port 50007 ssh2",
+      "Nov 20 10:16:10 victim sshd[2100]: Accepted password for alice from 172.30.0.66 port 50100 ssh2"
+    ]
+  },
+  {
+    "name": "ssh-normal-login-is-quiet",
+    "forbid_rule": "100102",
+    "events": [
+      "Nov 20 10:16:10 victim sshd[2100]: Accepted password for alice from 172.30.0.66 port 50100 ssh2"
+    ]
+  },
+  {
+    "name": "ssh-root-login",
+    "expect_rule": "100103",
+    "events": [
+      "Nov 20 10:30:00 victim sshd[4000]: Accepted password for root from 172.30.0.66 port 52000 ssh2"
+    ]
+  },
+  {
+    "name": "sudo-root-shell",
+    "expect_rule": "100200",
+    "events": [
+      "Nov 20 10:40:00 victim sudo:    alice : TTY=pts/0 ; PWD=/home/alice ; USER=root ; COMMAND=/bin/bash"
+    ]
+  },
+  {
+    "name": "sudo-python",
+    "expect_rule": "100200",
+    "events": [
+      "Nov 20 10:40:05 victim sudo:    alice : TTY=pts/0 ; PWD=/home/alice ; USER=root ; COMMAND=/usr/bin/python3 -c import pty;pty.spawn('/bin/sh')"
+    ]
+  },
+  {
+    "name": "sudo-gtfobins-find",
+    "expect_rule": "100201",
+    "events": [
+      "Nov 20 10:41:00 victim sudo:    alice : TTY=pts/0 ; PWD=/home/alice ; USER=root ; COMMAND=/usr/bin/find . -exec /bin/sh -c id ; -quit"
+    ]
+  },
+  {
+    "name": "sudo-normal-command-is-quiet",
+    "forbid_rule": "100200",
+    "events": [
+      "Nov 20 10:42:00 victim sudo:    alice : TTY=pts/0 ; PWD=/home/alice ; USER=root ; COMMAND=/usr/bin/apt update"
+    ]
+  },
+  {
+    "name": "sudo-not-in-sudoers-repeated",
+    "expect_rule": "100202",
+    "events": [
+      "Nov 20 10:43:00 victim sudo:      bob : user NOT in sudoers ; TTY=pts/1 ; PWD=/home/bob ; USER=root ; COMMAND=/bin/cat /etc/shadow",
+      "Nov 20 10:43:01 victim sudo:      bob : user NOT in sudoers ; TTY=pts/1 ; PWD=/home/bob ; USER=root ; COMMAND=/bin/cat /etc/shadow",
+      "Nov 20 10:43:02 victim sudo:      bob : user NOT in sudoers ; TTY=pts/1 ; PWD=/home/bob ; USER=root ; COMMAND=/bin/cat /etc/shadow",
+      "Nov 20 10:43:03 victim sudo:      bob : user NOT in sudoers ; TTY=pts/1 ; PWD=/home/bob ; USER=root ; COMMAND=/bin/cat /etc/shadow"
+    ]
+  },
+  {
+    "name": "backdoor-uid0-account",
+    "expect_rule": "100300",
+    "events": [
+      "Nov 20 10:50:00 victim useradd[5000]: new user: name=sysupdate, UID=0, GID=0, home=/root, shell=/bin/bash, from=/dev/pts/0"
+    ]
+  },
+  {
+    "name": "normal-account-is-not-uid0-alert",
+    "forbid_rule": "100300",
+    "events": [
+      "Nov 20 10:50:10 victim useradd[5001]: new user: name=carol, UID=1003, GID=1003, home=/home/carol, shell=/bin/bash, from=/dev/pts/0"
+    ]
+  },
+  {
+    "name": "usermod-add-to-sudo",
+    "expect_rule": "100301",
+    "events": [
+      "Nov 20 10:51:00 victim usermod[5002]: add 'bob' to group 'sudo'"
+    ]
+  },
+  {
+    "name": "gpasswd-add-to-sudo",
+    "expect_rule": "100302",
+    "events": [
+      "Nov 20 10:51:30 victim gpasswd[5003]: user bob added by root to group sudo"
+    ]
+  },
+  {
+    "name": "root-crontab-changed",
+    "expect_rule": "100303",
+    "location": "/var/log/syslog",
+    "events": [
+      "Nov 20 10:52:00 victim crontab[5004]: (root) REPLACE (root)"
+    ]
+  },
+  {
+    "name": "auth-log-truncated",
+    "expect_rule": "100400",
+    "location": "wazuh-logcollector",
+    "events": [
+      "ossec: File size reduced (inode remained): '/var/log/auth.log'."
+    ]
+  },
+  {
+    "name": "ssh-service-scan",
+    "expect_rule": "100500",
+    "events": [
+      "Nov 20 10:10:00 victim sshd[6000]: Did not receive identification string from 172.30.0.66 port 53000",
+      "Nov 20 10:10:01 victim sshd[6001]: Did not receive identification string from 172.30.0.66 port 53001",
+      "Nov 20 10:10:02 victim sshd[6002]: Did not receive identification string from 172.30.0.66 port 53002",
+      "Nov 20 10:10:03 victim sshd[6003]: Did not receive identification string from 172.30.0.66 port 53003",
+      "Nov 20 10:10:04 victim sshd[6004]: Did not receive identification string from 172.30.0.66 port 53004",
+      "Nov 20 10:10:05 victim sshd[6005]: Did not receive identification string from 172.30.0.66 port 53005"
+    ]
+  }
+]
